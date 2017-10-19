@@ -51,12 +51,22 @@ Add it in your root build.gradle at the end of repositories:
         EZPermission.Companion.getInstance().onRequestPermissionsResult(this, requestCode, permissions, grantResults);
     }
 
-#### in kotlin ####
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         EZPermission.Companion.getInstance().onActivityResult(this, requestCode, resultCode, data);
+    }
+
+#### in kotlin ####
+
+    fun onRequestPermissionsResult(requestCode: Int, @NonNull permissions: Array<String>, @NonNull grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        EZPermission.instance.onRequestPermissionsResult(this, requestCode, permissions, grantResults)
+    }
+
+    protected fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        EZPermission.instance.onActivityResult(this, requestCode, resultCode, data)
     }
 
 ### 3、使用EZPermission申请权限 ###
