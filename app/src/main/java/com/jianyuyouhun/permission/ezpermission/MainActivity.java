@@ -21,7 +21,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestCall() {
-        EZPermission.Companion.getInstance().requestPermission(this, new PRequester(Manifest.permission.CALL_PHONE), new OnRequestPermissionResultListener() {
+        EZPermission.Companion.getInstance().requestPermission(
+                this,
+                new PRequester(
+                        "提示",
+                        "该应用需要获取你的电话权限，请到设置页面开启",
+                        "取消",
+                        "带我去",
+                        Manifest.permission.CALL_PHONE, 1),
+                new OnRequestPermissionResultListener() {
             @Override
             public void onRequestSuccess(@NonNull String permission) {
                 Toast.makeText(MainActivity.this, "请求成功" + permission, Toast.LENGTH_SHORT).show();
@@ -31,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onRequestFailed(@NonNull String permission) {
                 Toast.makeText(MainActivity.this, "请求失败" + permission, Toast.LENGTH_SHORT).show();
+                requestWrite();
             }
         });
     }

@@ -83,15 +83,17 @@ class EZPermission private constructor(app: Application) {
                         val builder = AlertDialog.Builder(activity)
                                 .setTitle(requester.tips)
                                 .setMessage(requester.message)
-                                .setPositiveButton(requester.positiveButtonText, { dialog, _ ->
-                                    dialog.dismiss()
-                                    requestMap.put(requester, listener!!)
-                                    startSystemSettingActivity(activity, requester.requestCode)
-                                })
                                 .setNegativeButton(requester.negativeButtonText, { dialog, _ ->
                                     dialog.dismiss()
                                     listener?.onRequestFailed(requester.permission)
                                 })
+                        if (requester.positiveButtonText != null) {//如果没有积极按钮文本，那么就关闭跳转设置页面功能
+                            builder.setPositiveButton(requester.positiveButtonText, { dialog, _ ->
+                                dialog.dismiss()
+                                requestMap.put(requester, listener!!)
+                                startSystemSettingActivity(activity, requester.requestCode)
+                            })
+                        }
                         builder.show()
                     } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, requester.permission)) {
                         permissionManager.putPermissionRecord(requester.permission, true)
