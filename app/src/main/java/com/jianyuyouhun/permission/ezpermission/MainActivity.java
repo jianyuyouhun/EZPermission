@@ -2,9 +2,9 @@ package com.jianyuyouhun.permission.ezpermission;
 
 import android.Manifest;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.widget.Toast;
 
 import com.jianyuyouhun.permission.library.EZPermission;
@@ -23,25 +23,24 @@ public class MainActivity extends AppCompatActivity {
     private void requestCall() {
         EZPermission.Companion.getInstance().requestPermission(
                 this,
-                new PRequester(
-                        "提示",
-                        "该应用需要获取你的电话权限，请到设置页面开启",
-                        "取消",
-                        "带我去",
-                        Manifest.permission.CALL_PHONE, 1),
+                new PRequester(Manifest.permission.CALL_PHONE)
+                        .setTips("提示")
+                        .setMessage("该应用需要获取你的电话权限，请到设置页面开启")
+                        .setNegativeButtonText("取消")
+                        .setPositiveButtonText("带我去"),
                 new OnRequestPermissionResultListener() {
-            @Override
-            public void onRequestSuccess(@NonNull String permission) {
-                Toast.makeText(MainActivity.this, "请求成功" + permission, Toast.LENGTH_SHORT).show();
-                requestWrite();
-            }
+                    @Override
+                    public void onRequestSuccess(@NonNull String permission) {
+                        Toast.makeText(MainActivity.this, "请求成功" + permission, Toast.LENGTH_SHORT).show();
+                        requestWrite();
+                    }
 
-            @Override
-            public void onRequestFailed(@NonNull String permission) {
-                Toast.makeText(MainActivity.this, "请求失败" + permission, Toast.LENGTH_SHORT).show();
-                requestWrite();
-            }
-        });
+                    @Override
+                    public void onRequestFailed(@NonNull String permission) {
+                        Toast.makeText(MainActivity.this, "请求失败" + permission, Toast.LENGTH_SHORT).show();
+                        requestWrite();
+                    }
+                });
     }
 
     private void requestWrite() {
