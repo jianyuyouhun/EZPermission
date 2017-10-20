@@ -73,7 +73,7 @@ Add it in your root build.gradle at the end of repositories:
 
 #### in java ####
 
-		EZPermission.Companion.getInstance().requestPermission(this, new PRequester(Manifest.permission.CALL_PHONE), new OnRequestPermissionResultListener() {
+	EZPermission.Companion.getInstance().requestPermission(this, new PRequester(Manifest.permission.CALL_PHONE), new OnRequestPermissionResultListener() {
             @Override
             public void onRequestSuccess(@NonNull String permission) {
                 Toast.makeText(MainActivity.this, "请求成功" + permission, Toast.LENGTH_SHORT).show();
