@@ -103,7 +103,7 @@ Add it in your root build.gradle at the end of repositories:
 
 　　如果在Fragment中使用则也需要获取Activity对象或者BaseActivity对象，重写Fragment本身的OnActivityResult和OnRequestPermissionResult没有效果（暂时还未处理该问题）
 
-　　请求码的设置在PRequester里面，默认为1，如果有并发请求的话，请设置不同的requestCode。
+　　请求码的设置在PRequester里面，默认为1，如果有并发其他用到onActivityResult的请求的话，请设置不同的requestCode。
 
 PRequester的初始化使用链式调用方式如下：
 
