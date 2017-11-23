@@ -24,7 +24,7 @@ Add it in your root build.gradle at the end of repositories:
 #### Step 2. Add the dependency ####
 
 	dependencies {
-    	compile 'com.github.jianyuyouhun:ezpermission:1.1'
+    	compile 'com.github.jianyuyouhun:ezpermission:1.2'
 	}
 
 ### 初始化项目 ###
@@ -59,12 +59,12 @@ Add it in your root build.gradle at the end of repositories:
 
 #### in kotlin ####
 
-    fun onRequestPermissionsResult(requestCode: Int, @NonNull permissions: Array<String>, @NonNull grantResults: IntArray) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         EZPermission.instance.onRequestPermissionsResult(this, requestCode, permissions, grantResults)
     }
 
-    protected fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         EZPermission.instance.onActivityResult(this, requestCode, resultCode, data)
     }
@@ -87,16 +87,17 @@ Add it in your root build.gradle at the end of repositories:
 
 #### in kotlin ####
 
-       EZPermission.instance.requestPermission(activity, PRequester(Manifest.permission.CALL_PHONE),
-                onRequestPermissionResultListener = object : OnRequestPermissionResultListener {
-                    override fun onRequestSuccess(permission: String) {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
-
-                    override fun onRequestFailed(permission: String) {
-                        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-                    }
-
+       EZPermission.instance.requestPermission(
+                this,
+                PRequester(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .setMessage("该应用需要获取你的存储权限，请到设置页面开启")
+                        .setNegativeButtonText("我知道了")
+                        .setPositiveButtonText(null),
+                onSuccess = { permission ->
+                    Toast.makeText(this, "请求成功" + permission, Toast.LENGTH_SHORT).show()
+                },
+                onFailed = { permission ->
+                    Toast.makeText(this, "请求失败" + permission, Toast.LENGTH_SHORT).show()
                 })
 
 ### 4、注意事项 ###
