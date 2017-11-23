@@ -25,9 +25,9 @@ public class MainActivity extends AppCompatActivity {
                 this,
                 new PRequester(Manifest.permission.CALL_PHONE)
                         .setTips("提示")
-                        .setMessage("该应用需要获取你的电话权限，请到设置页面开启")
+                        .setMessage("该应用需要获取你的电话权限")
                         .setNegativeButtonText("取消")
-                        .setPositiveButtonText("带我去"),
+                        .setPositiveButtonText("去开启"),
                 new OnRequestPermissionResultListener() {
                     @Override
                     public void onRequestSuccess(@NonNull String permission) {
@@ -44,7 +44,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestWrite() {
-        EZPermission.Companion.getInstance().requestPermission(this, new PRequester(Manifest.permission.WRITE_EXTERNAL_STORAGE), new OnRequestPermissionResultListener() {
+        EZPermission.Companion.getInstance().requestPermission(
+                this,
+                new PRequester(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        .setMessage("该应用需要获取你的存储权限，请到设置页面开启")
+                        .setNegativeButtonText("我知道了")
+                        .setPositiveButtonText(null),
+                new OnRequestPermissionResultListener() {
             @Override
             public void onRequestSuccess(@NonNull String permission) {
                 Toast.makeText(MainActivity.this, "请求成功" + permission, Toast.LENGTH_SHORT).show();

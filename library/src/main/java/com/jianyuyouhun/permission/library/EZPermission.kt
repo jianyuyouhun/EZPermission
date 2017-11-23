@@ -29,12 +29,21 @@ class EZPermission private constructor(app: Application) {
         }
     }
 
-    val permissionManager: PermissionManager
+    private val permissionManager: PermissionManager
     private val requestMap = HashMap<PRequester, OnRequestPermissionResultListener>()
+    private val requestLambdaMap = HashMap<PRequester, OnRequestResultListener>()
 
     init {
         hasInit = true
         permissionManager = PermissionManager(app)
+    }
+
+    private fun checkRepeat(keys: Set<PRequester>, requestCode: Int): Boolean {
+        val repeated = keys.any { it.requestCode == requestCode }
+        if (repeated) {
+            Log.d(TAG, "重复的请求码:" + requestCode)
+        }
+        return repeated
     }
 
     /**
@@ -44,9 +53,7 @@ class EZPermission private constructor(app: Application) {
      * @param onRequestPermissionResultListener     请求回调
      */
     fun requestPermission(activity: Activity, pRequester: PRequester, onRequestPermissionResultListener: OnRequestPermissionResultListener) {
-        val repeated = requestMap.keys.any { it.requestCode == pRequester.requestCode }
-        if (repeated) {
-            Log.d(TAG, "重复的请求码:" + pRequester.requestCode)
+        if (checkRepeat(requestMap.keys, pRequester.requestCode)) {//检测重复添加
             return
         }
         requestMap.put(pRequester, onRequestPermissionResultListener)
@@ -63,47 +70,107 @@ class EZPermission private constructor(app: Application) {
     }
 
     /**
+     * 请求权限
+     * @param activity                  activity
+     * @param pRequester                请求体
+     * @param onSuccess                 成功的回调
+     * @param onFailed                  失败的回调
+     */
+    fun requestPermission(activity: Activity, pRequester: PRequester, onSuccess: (permission: String) -> Unit, onFailed: (permission: String) -> Unit) {
+        if (checkRepeat(requestMap.keys, pRequester.requestCode)) {//检测重复添加
+            return
+        }
+        requestLambdaMap.put(pRequester, OnRequestResultListener(onSuccess, onFailed))
+        if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
+            val listener = requestLambdaMap.remove(pRequester)
+            listener?.onSuccess?.invoke(pRequester.permission)
+        } else {
+            //没有权限的时候直接尝试获取权限
+            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
+                permissionManager.putPermissionRecord(pRequester.permission, false)
+            }
+            ActivityCompat.requestPermissions(activity, arrayOf(pRequester.permission), pRequester.requestCode)
+        }
+    }
+
+    /**
      * 处理申请结果
      * @param activity          Activity
      * @param requestCode       请求码
      * @param permissions       权限组，暂时无用
      * @param grantResults      状态
      */
-    fun onRequestPermissionsResult(activity: Activity, requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
-        val requester: PRequester? = requestMap.keys.firstOrNull { requestCode == it.requestCode }
+    fun onRequestPermissionsResult(activity: Activity, requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        //使用回调监听
+        var requester: PRequester? = requestMap.keys.firstOrNull { requestCode == it.requestCode }
         if (requester != null) {
             val listener = requestMap.remove(requester)
             if (grantResults.isEmpty()) {
                 listener?.onRequestFailed(requester.permission)
+            } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                listener?.onRequestSuccess(requester.permission)
+            } else if (permissionManager.getPermissionRecord(requester.permission)) {//如果被禁止不在询问
+                showIgnoreDialog(activity, requester,
+                        { listener?.onRequestFailed(requester!!.permission) },
+                        {
+                            requestMap.put(requester!!, listener!!)
+                            startSystemSettingActivity(activity, requester!!.requestCode)
+                        })
+            } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, requester.permission)) {
+                permissionManager.putPermissionRecord(requester.permission, true)
+                listener?.onRequestFailed(requester.permission)
             } else {
-                if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    listener?.onRequestSuccess(requester.permission)
-                } else {
-                    if (permissionManager.getPermissionRecord(requester.permission)) {//如果被禁止不在询问
-                        val builder = AlertDialog.Builder(activity)
-                                .setTitle(requester.tips)
-                                .setMessage(requester.message)
-                                .setNegativeButton(requester.negativeButtonText, { dialog, _ ->
-                                    dialog.dismiss()
-                                    listener?.onRequestFailed(requester.permission)
-                                })
-                        if (requester.positiveButtonText != null) {//如果没有积极按钮文本，那么就关闭跳转设置页面功能
-                            builder.setPositiveButton(requester.positiveButtonText, { dialog, _ ->
-                                dialog.dismiss()
-                                requestMap.put(requester, listener!!)
-                                startSystemSettingActivity(activity, requester.requestCode)
+                listener?.onRequestFailed(requester.permission)
+            }
+        } else {//使用lambda表达式
+            requester = requestLambdaMap.keys.firstOrNull { requestCode == it.requestCode }
+            if (requester != null) {
+                val listener = requestLambdaMap.remove(requester)
+                if (grantResults.isEmpty()) {
+                    listener?.onFailed?.invoke(requester.permission)
+                } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    listener?.onSuccess?.invoke(requester.permission)
+                } else if (permissionManager.getPermissionRecord(requester.permission)) {//如果被禁止不在询问
+                    showIgnoreDialog(activity, requester,
+                            doNegative = {
+                                listener?.onFailed?.invoke(requester!!.permission)
+                            },
+                            doPositive = {
+                                requestLambdaMap.put(requester!!, listener!!)
+                                startSystemSettingActivity(activity, requester!!.requestCode)
                             })
-                        }
-                        builder.show()
-                    } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, requester.permission)) {
-                        permissionManager.putPermissionRecord(requester.permission, true)
-                        listener?.onRequestFailed(requester.permission)
-                    } else {
-                        listener?.onRequestFailed(requester.permission)
-                    }
+                } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, requester.permission)) {
+                    permissionManager.putPermissionRecord(requester.permission, true)
+                    listener?.onFailed?.invoke(requester.permission)
+                } else {
+                    listener?.onFailed?.invoke(requester.permission)
                 }
             }
         }
+    }
+
+    /**
+     * 跳转设置页面
+     * @param activity      activity
+     * @param requester     请求体
+     * @param doNegative    消极按钮回调
+     * @param doPositive    积极按钮回调
+     */
+    private fun showIgnoreDialog(activity: Activity, requester: PRequester, doNegative: () -> Unit, doPositive: () -> Unit) {
+        val builder = AlertDialog.Builder(activity)
+                .setTitle(requester.tips)
+                .setMessage(requester.message)
+                .setNegativeButton(requester.negativeButtonText, { dialog, _ ->
+                    dialog.dismiss()
+                    doNegative()
+                })
+        if (requester.positiveButtonText != null) {//如果没有积极按钮文本，那么就关闭跳转设置页面功能
+            builder.setPositiveButton(requester.positiveButtonText, { dialog, _ ->
+                dialog.dismiss()
+                doPositive()
+            })
+        }
+        builder.show()
     }
 
     /**
@@ -114,7 +181,8 @@ class EZPermission private constructor(app: Application) {
      * @param data          intent
      */
     fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
-        val requester: PRequester? = requestMap.keys.firstOrNull { requestCode == it.requestCode }
+        //使用回调监听
+        var requester: PRequester? = requestMap.keys.firstOrNull { requestCode == it.requestCode }
         if (requester != null) {
             val listener = requestMap.remove(requester)
             if (ActivityCompat.checkSelfPermission(activity, requester.permission) == PackageManager.PERMISSION_GRANTED) {
@@ -123,6 +191,17 @@ class EZPermission private constructor(app: Application) {
                 listener?.onRequestFailed(requester.permission)
             }
             synchronizePermissionsState(activity)
+        } else {//使用lambda表达式
+            requester = requestLambdaMap.keys.firstOrNull { requestCode == it.requestCode }
+            if (requester != null) {
+                val listener = requestLambdaMap.remove(requester)
+                if (ActivityCompat.checkSelfPermission(activity, requester.permission) == PackageManager.PERMISSION_GRANTED) {
+                    listener?.onSuccess?.invoke(requester.permission)
+                } else {
+                    listener?.onFailed?.invoke(requester.permission)
+                }
+                synchronizePermissionsState(activity)
+            }
         }
     }
 
@@ -142,18 +221,11 @@ class EZPermission private constructor(app: Application) {
             }
         }
     }
-
-    /**
-     * 启动设置界面
-     */
-    private fun startSystemSettingActivity(activity: Activity, settingsRequestCode: Int) {
-        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-        val uri = Uri.fromParts("package", activity.packageName, null)
-        intent.data = uri
-
-        activity.startActivityForResult(intent, settingsRequestCode)
-    }
 }
+
+private class OnRequestResultListener(
+        val onSuccess: (permission: String) -> Unit,
+        val onFailed: (permission: String) -> Unit)
 
 interface OnRequestPermissionResultListener {
     fun onRequestSuccess(permission: String)
