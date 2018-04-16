@@ -89,6 +89,7 @@ class EZPermission private constructor(app: Application) {
             if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
                 val listener = requestMap.remove(pRequester)
                 listener?.onRequestSuccess(pRequester.permission)
+                activity.finish()
             } else {
                 //没有权限的时候直接尝试获取权限
                 if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
@@ -100,6 +101,7 @@ class EZPermission private constructor(app: Application) {
             if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
                 val listener = requestLambdaMap.remove(pRequester)
                 listener?.onSuccess?.invoke(pRequester.permission)
+                activity.finish()
             } else {
                 //没有权限的时候直接尝试获取权限
                 if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
