@@ -3,10 +3,9 @@ package com.jianyuyouhun.permission.library
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.Application
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.provider.Settings
 import android.support.v4.app.ActivityCompat
 import android.util.Log
 
@@ -48,49 +47,68 @@ class EZPermission private constructor(app: Application) {
 
     /**
      * 请求权限
-     * @param activity                              activity
+     * @param context                               Context
      * @param pRequester                            请求体
      * @param onRequestPermissionResultListener     请求回调
      */
-    fun requestPermission(activity: Activity, pRequester: PRequester, onRequestPermissionResultListener: OnRequestPermissionResultListener) {
+    fun requestPermission(context: Context, pRequester: PRequester, onRequestPermissionResultListener: OnRequestPermissionResultListener) {
         if (checkRepeat(requestMap.keys, pRequester.requestCode)) {//检测重复添加
             return
         }
         requestMap.put(pRequester, onRequestPermissionResultListener)
-        if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
-            val listener = requestMap.remove(pRequester)
-            listener?.onRequestSuccess(pRequester.permission)
-        } else {
-            //没有权限的时候直接尝试获取权限
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
-                permissionManager.putPermissionRecord(pRequester.permission, false)
-            }
-            ActivityCompat.requestPermissions(activity, arrayOf(pRequester.permission), pRequester.requestCode)
-        }
+        RequestPermissionActivity.startActivity(context, pRequester)
     }
 
     /**
      * 请求权限
-     * @param activity                  activity
+     * @param context                   Context
      * @param pRequester                请求体
      * @param onSuccess                 成功的回调
      * @param onFailed                  失败的回调
      */
-    fun requestPermission(activity: Activity, pRequester: PRequester, onSuccess: (permission: String) -> Unit, onFailed: (permission: String) -> Unit) {
+    fun requestPermission(context: Context, pRequester: PRequester, onSuccess: (permission: String) -> Unit, onFailed: (permission: String) -> Unit) {
         if (checkRepeat(requestMap.keys, pRequester.requestCode)) {//检测重复添加
             return
         }
         requestLambdaMap.put(pRequester, OnRequestResultListener(onSuccess, onFailed))
-        if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
-            val listener = requestLambdaMap.remove(pRequester)
-            listener?.onSuccess?.invoke(pRequester.permission)
+        RequestPermissionActivity.startActivity(context, pRequester)
+    }
+
+    fun requestPermission(activity: Activity, pRequesterSeri: PRequester): Boolean {
+        var pRequester = requestMap.keys.firstOrNull { it.requestCode == pRequesterSeri.requestCode }
+        var isLambda = true
+        if (pRequester == null) {
+            pRequester = requestLambdaMap.keys.firstOrNull { it.requestCode == pRequesterSeri.requestCode }
         } else {
-            //没有权限的时候直接尝试获取权限
-            if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
-                permissionManager.putPermissionRecord(pRequester.permission, false)
-            }
-            ActivityCompat.requestPermissions(activity, arrayOf(pRequester.permission), pRequester.requestCode)
+            isLambda = false
         }
+        if (pRequester == null) {
+            return false
+        }
+        if (!isLambda) {
+            if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
+                val listener = requestMap.remove(pRequester)
+                listener?.onRequestSuccess(pRequester.permission)
+            } else {
+                //没有权限的时候直接尝试获取权限
+                if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
+                    permissionManager.putPermissionRecord(pRequester.permission, false)
+                }
+                ActivityCompat.requestPermissions(activity, arrayOf(pRequester.permission), pRequester.requestCode)
+            }
+        } else {
+            if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
+                val listener = requestLambdaMap.remove(pRequester)
+                listener?.onSuccess?.invoke(pRequester.permission)
+            } else {
+                //没有权限的时候直接尝试获取权限
+                if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
+                    permissionManager.putPermissionRecord(pRequester.permission, false)
+                }
+                ActivityCompat.requestPermissions(activity, arrayOf(pRequester.permission), pRequester.requestCode)
+            }
+        }
+        return true
     }
 
     /**
@@ -107,11 +125,16 @@ class EZPermission private constructor(app: Application) {
             val listener = requestMap.remove(requester)
             if (grantResults.isEmpty()) {
                 listener?.onRequestFailed(requester.permission)
+                activity.finish()
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 listener?.onRequestSuccess(requester.permission)
+                activity.finish()
             } else if (permissionManager.getPermissionRecord(requester.permission)) {//如果被禁止不在询问
                 showIgnoreDialog(activity, requester,
-                        { listener?.onRequestFailed(requester!!.permission) },
+                        {
+                            listener?.onRequestFailed(requester!!.permission)
+                            activity.finish()
+                        },
                         {
                             requestMap.put(requester!!, listener!!)
                             startSystemSettingActivity(activity, requester!!.requestCode)
@@ -119,8 +142,10 @@ class EZPermission private constructor(app: Application) {
             } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, requester.permission)) {
                 permissionManager.putPermissionRecord(requester.permission, true)
                 listener?.onRequestFailed(requester.permission)
+                activity.finish()
             } else {
                 listener?.onRequestFailed(requester.permission)
+                activity.finish()
             }
         } else {//使用lambda表达式
             requester = requestLambdaMap.keys.firstOrNull { requestCode == it.requestCode }
@@ -128,22 +153,27 @@ class EZPermission private constructor(app: Application) {
                 val listener = requestLambdaMap.remove(requester)
                 if (grantResults.isEmpty()) {
                     listener?.onFailed?.invoke(requester.permission)
+                    activity.finish()
                 } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     listener?.onSuccess?.invoke(requester.permission)
+                    activity.finish()
                 } else if (permissionManager.getPermissionRecord(requester.permission)) {//如果被禁止不在询问
                     showIgnoreDialog(activity, requester,
                             doNegative = {
-                                listener?.onFailed?.invoke(requester!!.permission)
+                                listener?.onFailed?.invoke(requester.permission)
+                                activity.finish()
                             },
                             doPositive = {
-                                requestLambdaMap.put(requester!!, listener!!)
-                                startSystemSettingActivity(activity, requester!!.requestCode)
+                                requestLambdaMap.put(requester, listener!!)
+                                startSystemSettingActivity(activity, requester.requestCode)
                             })
                 } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, requester.permission)) {
                     permissionManager.putPermissionRecord(requester.permission, true)
                     listener?.onFailed?.invoke(requester.permission)
+                    activity.finish()
                 } else {
                     listener?.onFailed?.invoke(requester.permission)
+                    activity.finish()
                 }
             }
         }
@@ -191,6 +221,7 @@ class EZPermission private constructor(app: Application) {
                 listener?.onRequestFailed(requester.permission)
             }
             synchronizePermissionsState(activity)
+            activity.finish()
         } else {//使用lambda表达式
             requester = requestLambdaMap.keys.firstOrNull { requestCode == it.requestCode }
             if (requester != null) {
@@ -201,6 +232,7 @@ class EZPermission private constructor(app: Application) {
                     listener?.onFailed?.invoke(requester.permission)
                 }
                 synchronizePermissionsState(activity)
+                activity.finish()
             }
         }
     }
@@ -210,7 +242,7 @@ class EZPermission private constructor(app: Application) {
      */
     private fun synchronizePermissionsState(activity: Activity) {
         val allPermissionMap = permissionManager.allPermissionMap ?: //取不到缓存
-                return
+        return
         for (permission in allPermissionMap.keys) {
             if (ActivityCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED) {
                 permissionManager.putPermissionRecord(permission, false)//授予的权限都将禁用记录置空

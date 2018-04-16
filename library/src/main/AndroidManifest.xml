@@ -1,13 +1,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
 
-          package="com.jianyuyouhun.permission.library"
->
+    package="com.jianyuyouhun.permission.library">
 
-    <application android:allowBackup="true"
-                 android:label="@string/app_name"
-                 android:supportsRtl="true"
-    >
-
+    <application
+        android:allowBackup="true"
+        android:label="@string/app_name"
+        android:supportsRtl="true">
+        <activity
+            android:name=".RequestPermissionActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/reqPermissionActivity" />
     </application>
 
 </manifest>

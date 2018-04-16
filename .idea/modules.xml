@@ -3,8 +3,11 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/EZPermission.iml" filepath="$PROJECT_DIR$/EZPermission.iml" />
+      <module fileurl="file://E:\workspace\github\EZPermission\EZPermission.iml" filepath="E:\workspace\github\EZPermission\EZPermission.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://E:\workspace\github\EZPermission\app\app.iml" filepath="E:\workspace\github\EZPermission\app\app.iml" />
       <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
+      <module fileurl="file://E:\workspace\github\EZPermission\library\library.iml" filepath="E:\workspace\github\EZPermission\library\library.iml" />
     </modules>
   </component>
 </project>

@@ -50,14 +50,4 @@ class MainActivity2 : AppCompatActivity() {
                     Toast.makeText(this, "请求失败" + permission, Toast.LENGTH_SHORT).show()
                 })
     }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        EZPermission.instance.onRequestPermissionsResult(this, requestCode, permissions, grantResults)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        EZPermission.instance.onActivityResult(this, requestCode, resultCode, data)
-    }
 }

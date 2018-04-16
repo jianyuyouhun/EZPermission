@@ -1,11 +1,13 @@
 package com.jianyuyouhun.permission.library
 
+import java.io.Serializable
+
 /**
  * 权限请求体
  * Created by wangyu on 2017/10/19.
  */
 
-class PRequester {
+class PRequester: Serializable {
     var tips: String = "提示"
         private set
     var message: String = "此应用需要获取对应的权限"
