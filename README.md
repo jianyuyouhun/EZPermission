@@ -24,7 +24,7 @@ Add it in your root build.gradle at the end of repositories:
 #### Step 2. Add the dependency ####
 
 	dependencies {
-    	compile 'com.github.jianyuyouhun:ezpermission:1.2'
+    	compile 'com.github.jianyuyouhun:ezpermission:1.5'
 	}
 
 ### 初始化项目 ###
@@ -39,37 +39,7 @@ Add it in your root build.gradle at the end of repositories:
 
 	EZPermission.init(application)
 
-### 2、在Activity中配置 ###
-
-　　建议抽象出BaseActivity，需要对`onRequestPermissionsResult`和`onActivityResult`进行重写
-
-#### in java ####
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EZPermission.Companion.getInstance().onRequestPermissionsResult(this, requestCode, permissions, grantResults);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        EZPermission.Companion.getInstance().onActivityResult(this, requestCode, resultCode, data);
-    }
-
-#### in kotlin ####
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        EZPermission.instance.onRequestPermissionsResult(this, requestCode, permissions, grantResults)
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        EZPermission.instance.onActivityResult(this, requestCode, resultCode, data)
-    }
-
-### 3、使用EZPermission申请权限 ###
+### 2、使用EZPermission申请权限 ###
 
 #### in java ####
 
@@ -101,10 +71,6 @@ Add it in your root build.gradle at the end of repositories:
                 })
 
 ### 4、注意事项 ###
-
-　　如果在Fragment中使用则也需要获取Activity对象或者BaseActivity对象，重写Fragment本身的OnActivityResult和OnRequestPermissionResult没有效果（暂时还未处理该问题）
-
-　　请求码的设置在PRequester里面，默认为1，如果有并发其他用到onActivityResult的请求的话，请设置不同的requestCode。
 
 PRequester的初始化使用链式调用方式如下：
 
