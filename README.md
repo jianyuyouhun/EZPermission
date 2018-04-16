@@ -70,7 +70,7 @@ Add it in your root build.gradle at the end of repositories:
                     Toast.makeText(this, "请求失败" + permission, Toast.LENGTH_SHORT).show()
                 })
 
-### 4、注意事项 ###
+### 3、注意事项 ###
 
 PRequester的初始化使用链式调用方式如下：
 
