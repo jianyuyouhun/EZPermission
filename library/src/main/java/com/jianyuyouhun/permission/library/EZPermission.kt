@@ -14,7 +14,7 @@ import android.util.Log
  * Created by wangyu on 2017/10/19.
  */
 
-class EZPermission private constructor(app: Application) {
+open class EZPermission private constructor(app: Application) {
 
     companion object {
         lateinit var instance: EZPermission private set
@@ -74,7 +74,7 @@ class EZPermission private constructor(app: Application) {
         RequestPermissionActivity.startActivity(context, pRequester)
     }
 
-    fun requestPermission(activity: Activity, pRequesterSeri: PRequester): Boolean {
+    protected fun requestPermission(activity: Activity, pRequesterSeri: PRequester): Boolean {
         var pRequester = requestMap.keys.firstOrNull { it.requestCode == pRequesterSeri.requestCode }
         var isLambda = true
         if (pRequester == null) {
@@ -120,7 +120,7 @@ class EZPermission private constructor(app: Application) {
      * @param permissions       权限组，暂时无用
      * @param grantResults      状态
      */
-    fun onRequestPermissionsResult(activity: Activity, requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+    protected fun onRequestPermissionsResult(activity: Activity, requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         //使用回调监听
         var requester: PRequester? = requestMap.keys.firstOrNull { requestCode == it.requestCode }
         if (requester != null) {
@@ -212,7 +212,7 @@ class EZPermission private constructor(app: Application) {
      * @param resultCode    结果码
      * @param data          intent
      */
-    fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
+    protected fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
         //使用回调监听
         var requester: PRequester? = requestMap.keys.firstOrNull { requestCode == it.requestCode }
         if (requester != null) {
