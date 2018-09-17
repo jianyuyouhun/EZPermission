@@ -22,6 +22,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testV2() {
+        EZPermissionKt.getEZPermission().requestPermission(this, new OnReqPermissionResult() {
+            @Override
+            protected void onGranted(ArrayList<String> permissions) {
+
+            }
+
+            @Override
+            protected void onDenied(ArrayList<String> permissions) {
+
+            }
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE);
         EZPermissionKt.getEZPermission().requestPermission(this, new OnReqPermissionAlIgnoredResult(this) {
             @Override
             protected void onGranted(ArrayList<String> permissions) {

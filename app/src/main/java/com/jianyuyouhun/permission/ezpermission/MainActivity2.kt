@@ -7,6 +7,8 @@ import android.util.Log
 import android.widget.Toast
 import com.jianyuyouhun.permission.library.EZPermission
 import com.jianyuyouhun.permission.library.listener.OnReqPermissionAtIgnoredKTResult
+import com.jianyuyouhun.permission.library.listener.OnReqPermissionKTResult
+import com.jianyuyouhun.permission.library.listener.OnReqPermissionResult
 
 /**
  *
@@ -22,6 +24,13 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     private fun testV2() {
+        EZPermission.requestPermission(this, OnReqPermissionKTResult()
+                .onGranted {
+
+                }.onDenied {
+
+                },
+                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
         instance.requestPermission(this,
                 OnReqPermissionAtIgnoredKTResult(this)
                         .onGranted {
