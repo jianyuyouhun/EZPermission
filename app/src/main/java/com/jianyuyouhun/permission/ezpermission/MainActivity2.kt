@@ -1,22 +1,46 @@
 package com.jianyuyouhun.permission.ezpermission
 
 import android.Manifest
-import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import android.widget.Toast
 import com.jianyuyouhun.permission.library.EZPermission
 import com.jianyuyouhun.permission.library.PRequester
+import com.jianyuyouhun.permission.library.v2.listener.OnReqPermissionKTResult
 
 /**
  *
  * Created by wangyu on 2017/11/23.
  */
 class MainActivity2 : AppCompatActivity() {
+    private val TAG = "Permission"
+    private val instance by lazy { com.jianyuyouhun.permission.library.v2.EZPermission }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        requestCall()
+//        requestCall()
+        testV2()
+    }
+
+    private fun testV2() {
+        instance.requestPermission(this,
+                OnReqPermissionKTResult()
+                        .onGranted {
+                            var p = ""
+                            it.forEach { p += "$it," }
+                            Log.i(TAG, "申请成功$p")
+                        }
+                        .onDenied {
+                            var p = ""
+                            it.forEach { p += "$it," }
+                            Log.i(TAG, "申请失败$p")
+
+                        }
+                        .onCanceled {
+                            Log.i(TAG, "取消申请")
+                        },
+                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
     }
 
     private fun requestCall() {

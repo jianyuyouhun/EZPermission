@@ -10,6 +10,10 @@
             android:name=".RequestPermissionActivity"
             android:screenOrientation="portrait"
             android:theme="@style/reqPermissionActivity" />
+        <activity
+            android:name=".v2.ReqPermissionActivity"
+            android:screenOrientation="portrait"
+            android:theme="@style/reqPermissionActivity" />
     </application>
 
 </manifest>

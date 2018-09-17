@@ -10,6 +10,11 @@ import android.widget.Toast;
 import com.jianyuyouhun.permission.library.EZPermission;
 import com.jianyuyouhun.permission.library.OnRequestPermissionResultListener;
 import com.jianyuyouhun.permission.library.PRequester;
+import com.jianyuyouhun.permission.library.v2.EZPermissionKt;
+import com.jianyuyouhun.permission.library.v2.listener.OnReqPermissionKTResult;
+import com.jianyuyouhun.permission.library.v2.listener.OnReqPermissionResult;
+
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -17,7 +22,28 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        requestCall();
+        testV2();
+//        requestCall();
+    }
+
+    private void testV2() {
+        EZPermissionKt.getEZPermission().requestPermission(this, new OnReqPermissionResult() {
+
+            @Override
+            protected void onGranted(ArrayList<String> permissions) {
+
+            }
+
+            @Override
+            protected void onDenied(ArrayList<String> permissions) {
+
+            }
+
+            @Override
+            protected void onShowRationale(ArrayList<String> permissions) {
+
+            }
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE);
     }
 
     private void requestCall() {
@@ -51,16 +77,16 @@ public class MainActivity extends AppCompatActivity {
                         .setNegativeButtonText("我知道了")
                         .setPositiveButtonText(null),
                 new OnRequestPermissionResultListener() {
-            @Override
-            public void onRequestSuccess(@NonNull String permission) {
-                Toast.makeText(MainActivity.this, "请求成功" + permission, Toast.LENGTH_SHORT).show();
-            }
+                    @Override
+                    public void onRequestSuccess(@NonNull String permission) {
+                        Toast.makeText(MainActivity.this, "请求成功" + permission, Toast.LENGTH_SHORT).show();
+                    }
 
-            @Override
-            public void onRequestFailed(@NonNull String permission) {
-                Toast.makeText(MainActivity.this, "请求失败" + permission, Toast.LENGTH_SHORT).show();
-            }
-        });
+                    @Override
+                    public void onRequestFailed(@NonNull String permission) {
+                        Toast.makeText(MainActivity.this, "请求失败" + permission, Toast.LENGTH_SHORT).show();
+                    }
+                });
     }
 
 }
