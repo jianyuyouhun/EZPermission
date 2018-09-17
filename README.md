@@ -29,7 +29,9 @@ Add it in your root build.gradle at the end of repositories:
 
 ### 使用框架 ###
 
-2.0预览版可以一次性申请多个权限
+**2.0以后不再需要在Application中初始化框架了。**
+
+**2.0预览版可以一次性申请多个权限**
 
 ### 1、使用EZPermission申请权限 ###
 
