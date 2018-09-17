@@ -1,4 +1,4 @@
-package com.jianyuyouhun.permission.library.v2
+package com.jianyuyouhun.permission.library
 
 /**
  * 权限申请结果码

@@ -1,4 +1,4 @@
-package com.jianyuyouhun.permission.library.v2
+package com.jianyuyouhun.permission.library
 
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat

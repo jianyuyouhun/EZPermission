@@ -1,4 +1,4 @@
-package com.jianyuyouhun.permission.library.v2.listener;
+package com.jianyuyouhun.permission.library.listener;
 
 import java.util.ArrayList;
 
@@ -10,7 +10,7 @@ import java.util.ArrayList;
 public abstract class OnReqPermissionResult extends PreHandleResult {
 
     @Override
-    public final void onPreHandleFinished() {
+    public void onPreHandleFinished() {
         ArrayList<String> granteds = getGranteds();
         ArrayList<String> denieds = getDenieds();
         if (granteds.size() != 0) {
