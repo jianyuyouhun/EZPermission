@@ -31,13 +31,13 @@ Add it in your root build.gradle at the end of repositories:
 
 **2.0以后不再需要在Application中初始化框架了。**
 
-**2.0预览版可以一次性申请多个权限**
+**2.0可以一次性申请多个权限**
 
 ### 1、使用EZPermission申请权限 ###
 
 #### in java ####
 
-    EZPermissionKt.getEZPermission().requestPermission(context, new OnReqPermissionResult() {
+    EZPermissionKt.getEzpermission().requestPermission(context, new OnReqPermissionResult() {
             @Override
             protected void onGranted(ArrayList<String> permissions) {
 
@@ -51,7 +51,7 @@ Add it in your root build.gradle at the end of repositories:
 
 #### in kotlin ####
 
-    EZPermission.requestPermission(context, OnReqPermissionKTResult()
+    ezpermission.requestPermission(context, OnReqPermissionKTResult()
             .onGranted {
 
             }.onDenied {
@@ -66,7 +66,7 @@ OnReqPermissionAlIgnoredResult或者OnReqPermissionAlIgnoredKTResult进行处理
 
 **in java**
 
-    EZPermissionKt.getEZPermission().requestPermission(context, new OnReqPermissionAlIgnoredResult(activity) {
+    EZPermissionKt.getEzpermission().requestPermission(context, new OnReqPermissionAlIgnoredResult(activity) {
         @Override
         protected void onGranted(ArrayList<String> permissions) {
      
@@ -81,7 +81,7 @@ OnReqPermissionAlIgnoredResult或者OnReqPermissionAlIgnoredKTResult进行处理
 
 **in kotlin**
 
-	EZPermission.requestPermission(context,OnReqPermissionAtIgnoredKTResult(activity)
+	ezpermission.requestPermission(context,OnReqPermissionAtIgnoredKTResult(activity)
         .onGranted {
         
 		}.onDenied {
