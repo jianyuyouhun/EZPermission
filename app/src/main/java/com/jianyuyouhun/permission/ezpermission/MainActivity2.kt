@@ -5,10 +5,9 @@ import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
-import com.jianyuyouhun.permission.library.EZPermission
+import com.jianyuyouhun.permission.library.ezpermission
 import com.jianyuyouhun.permission.library.listener.OnReqPermissionAtIgnoredKTResult
 import com.jianyuyouhun.permission.library.listener.OnReqPermissionKTResult
-import com.jianyuyouhun.permission.library.listener.OnReqPermissionResult
 
 /**
  *
@@ -16,7 +15,6 @@ import com.jianyuyouhun.permission.library.listener.OnReqPermissionResult
  */
 class MainActivity2 : AppCompatActivity() {
     private val TAG = "Permission"
-    private val instance by lazy { EZPermission }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -24,14 +22,7 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     private fun testV2() {
-        EZPermission.requestPermission(this, OnReqPermissionKTResult()
-                .onGranted {
-
-                }.onDenied {
-
-                },
-                Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
-        instance.requestPermission(this,
+        ezpermission.requestPermission(this,
                 OnReqPermissionAtIgnoredKTResult(this)
                         .onGranted {
                             var p = ""

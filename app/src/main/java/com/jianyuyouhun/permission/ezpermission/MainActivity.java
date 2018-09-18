@@ -7,7 +7,6 @@ import android.widget.Toast;
 
 import com.jianyuyouhun.permission.library.EZPermissionKt;
 import com.jianyuyouhun.permission.library.listener.OnReqPermissionAlIgnoredResult;
-import com.jianyuyouhun.permission.library.listener.OnReqPermissionResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,18 +21,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void testV2() {
-        EZPermissionKt.getEZPermission().requestPermission(this, new OnReqPermissionResult() {
-            @Override
-            protected void onGranted(ArrayList<String> permissions) {
-
-            }
-
-            @Override
-            protected void onDenied(ArrayList<String> permissions) {
-
-            }
-        }, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE);
-        EZPermissionKt.getEZPermission().requestPermission(this, new OnReqPermissionAlIgnoredResult(this) {
+        EZPermissionKt.getEzpermission().requestPermission(this, new OnReqPermissionAlIgnoredResult(this) {
             @Override
             protected void onGranted(ArrayList<String> permissions) {
                 showToast("申请成功 " + getP(permissions));

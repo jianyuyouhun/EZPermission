@@ -24,7 +24,7 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.1.0'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     compile project (':library')
-//    compile 'com.github.jianyuyouhun:ezpermission:1.5.2'
+//    compile 'com.github.jianyuyouhun:ezpermission:2.0.1'
 }
 
 repositories {
