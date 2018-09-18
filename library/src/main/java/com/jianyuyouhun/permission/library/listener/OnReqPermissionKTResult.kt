@@ -1,6 +1,4 @@
-package com.jianyuyouhun.permission.library.v2.listener
-
-import com.jianyuyouhun.permission.library.v2.EZPermission
+package com.jianyuyouhun.permission.library.listener
 
 /**
  * 权限申请回调

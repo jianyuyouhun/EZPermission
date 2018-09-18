@@ -1,7 +1,8 @@
-package com.jianyuyouhun.permission.library.v2.listener
+package com.jianyuyouhun.permission.library.listener
 
-import com.jianyuyouhun.permission.library.v2.EZPermission
-import com.jianyuyouhun.permission.library.v2.ReqCode
+import com.jianyuyouhun.permission.library.EZPermission
+import com.jianyuyouhun.permission.library.ReqCode
+import com.jianyuyouhun.permission.library.listener.OnRequestPermissionResult
 
 /**
  * 请求结果处理回调kt
@@ -10,8 +11,8 @@ import com.jianyuyouhun.permission.library.v2.ReqCode
 abstract class PreHandleResult : OnRequestPermissionResult {
 
     protected val ignoredManager by lazy { EZPermission.getIgnoredManager() }
-    protected val granteds = ArrayList<String>()
-    protected val denieds = ArrayList<String>()
+    protected var granteds = ArrayList<String>()
+    protected var denieds = ArrayList<String>()
 
     final override fun onResult(reqCode: ReqCode, permission: String, shouldShowRationale: Boolean) {
         when (reqCode) {

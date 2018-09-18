@@ -7,13 +7,12 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
         <activity
-            android:name=".RequestPermissionActivity"
+            android:name=".ReqPermissionActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/reqPermissionActivity" />
-        <activity
-            android:name=".v2.ReqPermissionActivity"
+            android:theme="@style/Translucent.Activity" />
+        <activity android:name=".IgnoredHandleActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/reqPermissionActivity" />
+            android:theme="@style/Translucent.Activity"/>
     </application>
 
 </manifest>

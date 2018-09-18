@@ -1,268 +1,135 @@
 package com.jianyuyouhun.permission.library
 
 import android.app.Activity
-import android.app.AlertDialog
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
-import android.util.Log
+import com.jianyuyouhun.permission.library.listener.OnRequestPermissionResult
+import java.lang.ref.WeakReference
 
 /**
- * 权限申请
- * Created by wangyu on 2017/10/19.
+ * 权限请求操作类
+ * Created by wangyu on 2018/9/14.
  */
-
-open class EZPermission private constructor(app: Application) {
-
-    companion object {
-        lateinit var instance: EZPermission private set
-        var hasInit = false
-        val TAG = "EZPermission"
-        fun init(app: Application) {
-            if (hasInit) {
-                throw RuntimeException("EZPermission 已初始化了")
-            }
-            instance = EZPermission(app)
-        }
-    }
-
-    private val permissionManager: PermissionManager
-    private val requestMap = HashMap<PRequester, OnRequestPermissionResultListener>()
-    private val requestLambdaMap = HashMap<PRequester, OnRequestResultListener>()
-
-    init {
-        hasInit = true
-        permissionManager = PermissionManager(app)
-    }
-
-    private fun checkRepeat(keys: Set<PRequester>, requestCode: Int): Boolean {
-        val repeated = keys.any { it.requestCode == requestCode }
-        if (repeated) {
-            Log.d(TAG, "重复的请求码:" + requestCode)
-        }
-        return repeated
-    }
+private const val cacheName = "app_permissions_cache"
+var EZPermission = object : EPAction() {
+    private var ignoredManager: IgnoredManager? = null
+    private var reqListenerWeak: WeakReference<OnRequestPermissionResult>? = null
+    private var permissions = ArrayList<String>()
 
     /**
-     * 请求权限
-     * @param context                               Context
-     * @param pRequester                            请求体
-     * @param onRequestPermissionResultListener     请求回调
+     * 获取申请列表
      */
-    fun requestPermission(context: Context, pRequester: PRequester, onRequestPermissionResultListener: OnRequestPermissionResultListener) {
-        if (checkRepeat(requestMap.keys, pRequester.requestCode)) {//检测重复添加
-            return
-        }
-        requestMap.put(pRequester, onRequestPermissionResultListener)
-        RequestPermissionActivity.startActivity(context, pRequester)
-    }
+    override fun getPermissions(): ArrayList<String> = permissions
 
     /**
-     * 请求权限
-     * @param context                   Context
-     * @param pRequester                请求体
-     * @param onSuccess                 成功的回调
-     * @param onFailed                  失败的回调
+     * 获取忽略记录管理器
      */
-    fun requestPermission(context: Context, pRequester: PRequester, onSuccess: (permission: String) -> Unit, onFailed: (permission: String) -> Unit) {
-        if (checkRepeat(requestMap.keys, pRequester.requestCode)) {//检测重复添加
-            return
-        }
-        requestLambdaMap.put(pRequester, OnRequestResultListener(onSuccess, onFailed))
-        RequestPermissionActivity.startActivity(context, pRequester)
-    }
-
-    protected fun requestPermission(activity: Activity, pRequesterSeri: PRequester): Boolean {
-        var pRequester = requestMap.keys.firstOrNull { it.requestCode == pRequesterSeri.requestCode }
-        var isLambda = true
-        if (pRequester == null) {
-            pRequester = requestLambdaMap.keys.firstOrNull { it.requestCode == pRequesterSeri.requestCode }
-        } else {
-            isLambda = false
-        }
-        if (pRequester == null) {
-            return false
-        }
-        if (!isLambda) {
-            if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
-                val listener = requestMap.remove(pRequester)
-                listener?.onRequestSuccess(pRequester.permission)
-                activity.finish()
-            } else {
-                //没有权限的时候直接尝试获取权限
-                if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
-                    permissionManager.putPermissionRecord(pRequester.permission, false)
-                }
-                ActivityCompat.requestPermissions(activity, arrayOf(pRequester.permission), pRequester.requestCode)
-            }
-        } else {
-            if (ActivityCompat.checkSelfPermission(activity, pRequester.permission) == PackageManager.PERMISSION_GRANTED) {
-                val listener = requestLambdaMap.remove(pRequester)
-                listener?.onSuccess?.invoke(pRequester.permission)
-                activity.finish()
-            } else {
-                //没有权限的时候直接尝试获取权限
-                if (ActivityCompat.shouldShowRequestPermissionRationale(activity, pRequester.permission)) {
-                    permissionManager.putPermissionRecord(pRequester.permission, false)
-                }
-                ActivityCompat.requestPermissions(activity, arrayOf(pRequester.permission), pRequester.requestCode)
-            }
-        }
-        return true
-    }
+    override fun getIgnoredManager(): IgnoredManager = ignoredManager!!
 
     /**
-     * 处理申请结果
-     * @param activity          Activity
-     * @param requestCode       请求码
-     * @param permissions       权限组，暂时无用
-     * @param grantResults      状态
+     * 获取回调，调用此方法时表示明确不为空对象
      */
-    protected fun onRequestPermissionsResult(activity: Activity, requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        //使用回调监听
-        var requester: PRequester? = requestMap.keys.firstOrNull { requestCode == it.requestCode }
-        if (requester != null) {
-            val listener = requestMap.remove(requester)
-            if (grantResults.isEmpty()) {
-                listener?.onRequestFailed(requester.permission)
-                activity.finish()
-            } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                listener?.onRequestSuccess(requester.permission)
-                activity.finish()
-            } else if (permissionManager.getPermissionRecord(requester.permission)) {//如果被禁止不在询问
-                showIgnoreDialog(activity, requester,
-                        {
-                            listener?.onRequestFailed(requester!!.permission)
-                            activity.finish()
-                        },
-                        {
-                            requestMap.put(requester!!, listener!!)
-                            startSystemSettingActivity(activity, requester!!.requestCode)
-                        })
-            } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, requester.permission)) {
-                permissionManager.putPermissionRecord(requester.permission, true)
-                listener?.onRequestFailed(requester.permission)
-                activity.finish()
-            } else {
-                listener?.onRequestFailed(requester.permission)
-                activity.finish()
-            }
-        } else {//使用lambda表达式
-            requester = requestLambdaMap.keys.firstOrNull { requestCode == it.requestCode }
-            if (requester != null) {
-                val listener = requestLambdaMap.remove(requester)
-                if (grantResults.isEmpty()) {
-                    listener?.onFailed?.invoke(requester.permission)
-                    activity.finish()
-                } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    listener?.onSuccess?.invoke(requester.permission)
-                    activity.finish()
-                } else if (permissionManager.getPermissionRecord(requester.permission)) {//如果被禁止不在询问
-                    showIgnoreDialog(activity, requester,
-                            doNegative = {
-                                listener?.onFailed?.invoke(requester.permission)
-                                activity.finish()
-                            },
-                            doPositive = {
-                                requestLambdaMap.put(requester, listener!!)
-                                startSystemSettingActivity(activity, requester.requestCode)
-                            })
-                } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, requester.permission)) {
-                    permissionManager.putPermissionRecord(requester.permission, true)
-                    listener?.onFailed?.invoke(requester.permission)
-                    activity.finish()
-                } else {
-                    listener?.onFailed?.invoke(requester.permission)
-                    activity.finish()
-                }
-            }
-        }
-    }
+    fun getListener(): OnRequestPermissionResult = reqListenerWeak!!.get()!!
 
-    /**
-     * 跳转设置页面
-     * @param activity      activity
-     * @param requester     请求体
-     * @param doNegative    消极按钮回调
-     * @param doPositive    积极按钮回调
-     */
-    private fun showIgnoreDialog(activity: Activity, requester: PRequester, doNegative: () -> Unit, doPositive: () -> Unit) {
-        val builder = AlertDialog.Builder(activity)
-                .setTitle(requester.tips)
-                .setMessage(requester.message)
-                .setNegativeButton(requester.negativeButtonText, { dialog, _ ->
-                    dialog.dismiss()
-                    doNegative()
-                })
-        if (requester.positiveButtonText != null) {//如果没有积极按钮文本，那么就关闭跳转设置页面功能
-            builder.setPositiveButton(requester.positiveButtonText, { dialog, _ ->
-                dialog.dismiss()
-                doPositive()
+    override fun requestPermission(context: Context, listener: OnRequestPermissionResult, vararg permissions: String) {
+        if (permissions.isEmpty()) {
+            throw IllegalArgumentException("permissions为空，请传入需要申请的权限")
+        }
+        reqListenerWeak?.get()?.apply {
+            //回调不为空表示已经在请求了，此时抛出异常
+            throw RuntimeException("正在申请权限，请勿多次调用")
+        } ?: saveParams(permissions, listener, {
+            //为空时则保存回调，继续向下执行
+            ignoredManager?.apply {
+                //缓存管理器已初始化，开始申请
+                doRequest(context)
+            } ?: initAndLoop(context, {
+                //初始化缓存管理器，然后开始申请
+                doRequest(context)
             })
-        }
-        builder.show()
+        })
     }
 
-    /**
-     *
-     * @param activity      activity
-     * @param requestCode   请求码
-     * @param resultCode    结果码
-     * @param data          intent
-     */
-    protected fun onActivityResult(activity: Activity, requestCode: Int, resultCode: Int, data: Intent?) {
-        //使用回调监听
-        var requester: PRequester? = requestMap.keys.firstOrNull { requestCode == it.requestCode }
-        if (requester != null) {
-            val listener = requestMap.remove(requester)
-            if (ActivityCompat.checkSelfPermission(activity, requester.permission) == PackageManager.PERMISSION_GRANTED) {
-                listener?.onRequestSuccess(requester.permission)
-            } else {
-                listener?.onRequestFailed(requester.permission)
-            }
-            synchronizePermissionsState(activity)
-            activity.finish()
-        } else {//使用lambda表达式
-            requester = requestLambdaMap.keys.firstOrNull { requestCode == it.requestCode }
-            if (requester != null) {
-                val listener = requestLambdaMap.remove(requester)
-                if (ActivityCompat.checkSelfPermission(activity, requester.permission) == PackageManager.PERMISSION_GRANTED) {
-                    listener?.onSuccess?.invoke(requester.permission)
+    private fun doRequest(context: Context) {
+        context.startActivity(Intent(context, ReqPermissionActivity::class.java))
+    }
+
+    override fun onRequestPermissionsResult(activity: Activity, requestCode: Int, grantResults: IntArray) {
+        if (grantResults.isEmpty()) {
+            onResult(ReqCode.REQUEST_CANCELED, "", false)
+        } else {
+            permissions.forEach {
+                val rationale = ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
+                if (ActivityCompat.checkSelfPermission(activity, it) == PackageManager.PERMISSION_GRANTED) {
+                    onResult(ReqCode.PERMISSION_GRANTED, it, rationale)
                 } else {
-                    listener?.onFailed?.invoke(requester.permission)
+                    onResult(ReqCode.PERMISSION_DENIED, it, rationale)
                 }
-                synchronizePermissionsState(activity)
-                activity.finish()
             }
         }
+        activity.finish()
+        isOver()
+    }
+
+    private fun onResult(reqCode: ReqCode, permission: String, shouldShowRationale: Boolean) {
+        getListener().onResult(reqCode, permission, shouldShowRationale)
+    }
+
+    private fun isOver() {
+        getListener().isOver()
+        permissions.clear()
+        reqListenerWeak?.clear()
     }
 
     /**
-     * 同步其他权限禁用记录
+     * 保存参数
      */
-    private fun synchronizePermissionsState(activity: Activity) {
-        val allPermissionMap = permissionManager.allPermissionMap ?: //取不到缓存
-        return
-        for (permission in allPermissionMap.keys) {
-            if (ActivityCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED) {
-                permissionManager.putPermissionRecord(permission, false)//授予的权限都将禁用记录置空
-            } else if (!ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
-                permissionManager.putPermissionRecord(permission, true)//用户喜欢在设置页面点来点去的时候就是这里了
-            } else {
-                permissionManager.putPermissionRecord(permission, false)//怕出错，加上这行保险
-            }
-        }
+    private fun saveParams(pers: Array<out String>, listener: OnRequestPermissionResult, goOn: () -> Unit) {
+        permissions.clear()
+        permissions.addAll(pers)
+        reqListenerWeak = WeakReference(listener)
+        goOn()
+    }
+
+    /**
+     * 初始化管理器
+     */
+    private fun initAndLoop(context: Context, goOn: () -> Unit) {
+        ignoredManager = IgnoredManager(context, cacheName)
+        goOn()
+    }
+
+    private var settingListenerWeak: WeakReference<() -> Unit>? = null
+
+    override fun startSettings(context: Context, callback: () -> Unit) {
+        settingListenerWeak?.get()?.apply {
+            throw RuntimeException("正在跳往设置页，请勿多次调用")
+        } ?: saveSettingPara(callback, {
+            context.startActivity(Intent(context, IgnoredHandleActivity::class.java))
+        })
+    }
+
+    /**
+     * 保存设置页面回调
+     */
+    private fun saveSettingPara(callback: () -> Unit, goOn: () -> Unit) {
+        settingListenerWeak = WeakReference(callback)
+        goOn()
+    }
+
+    override fun onSettingFinish() {
+        settingListenerWeak?.get()?.invoke()
+        settingListenerWeak?.clear()
     }
 }
 
-private class OnRequestResultListener(
-        val onSuccess: (permission: String) -> Unit,
-        val onFailed: (permission: String) -> Unit)
-
-interface OnRequestPermissionResultListener {
-    fun onRequestSuccess(permission: String)
-    fun onRequestFailed(permission: String)
+abstract class EPAction {
+    abstract fun getIgnoredManager(): IgnoredManager
+    abstract fun getPermissions(): ArrayList<String>
+    abstract fun requestPermission(context: Context, listener: OnRequestPermissionResult, vararg permissions: String)
+    abstract fun onRequestPermissionsResult(activity: Activity, requestCode: Int, grantResults: IntArray)
+    abstract fun startSettings(context: Context, callback: () -> Unit)
+    abstract fun onSettingFinish()
 }
-

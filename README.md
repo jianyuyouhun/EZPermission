@@ -24,60 +24,68 @@ Add it in your root build.gradle at the end of repositories:
 #### Step 2. Add the dependency ####
 
 	dependencies {
-    	compile 'com.github.jianyuyouhun:ezpermission:1.5.2'
+    	compile 'com.github.jianyuyouhun:ezpermission:2.0.1-preview'
 	}
 
-### 初始化项目 ###
+### 使用框架 ###
 
-### 1、在Application中初始化本框架 ####
+**2.0以后不再需要在Application中初始化框架了。**
 
-#### in java
+**2.0预览版可以一次性申请多个权限**
 
-	EZPermission.Companion.init(application);
-
-#### in kotlin
-
-	EZPermission.init(application)
-
-### 2、使用EZPermission申请权限 ###
+### 1、使用EZPermission申请权限 ###
 
 #### in java ####
 
-	EZPermission.Companion.getInstance().requestPermission(this, new PRequester(Manifest.permission.CALL_PHONE), new OnRequestPermissionResultListener() {
+    EZPermissionKt.getEZPermission().requestPermission(context, new OnReqPermissionResult() {
             @Override
-            public void onRequestSuccess(@NonNull String permission) {
-                Toast.makeText(MainActivity.this, "请求成功" + permission, Toast.LENGTH_SHORT).show();
+            protected void onGranted(ArrayList<String> permissions) {
+
             }
 
             @Override
-            public void onRequestFailed(@NonNull String permission) {
-                Toast.makeText(MainActivity.this, "请求失败" + permission, Toast.LENGTH_SHORT).show();
+            protected void onDenied(ArrayList<String> permissions) {
+
             }
-        });
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE);//申请多个权限
 
 #### in kotlin ####
 
-       EZPermission.instance.requestPermission(
-                this,
-                PRequester(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        .setMessage("该应用需要获取你的存储权限，请到设置页面开启")
-                        .setNegativeButtonText("我知道了")
-                        .setPositiveButtonText(null),
-                onSuccess = { permission ->
-                    Toast.makeText(this, "请求成功" + permission, Toast.LENGTH_SHORT).show()
-                },
-                onFailed = { permission ->
-                    Toast.makeText(this, "请求失败" + permission, Toast.LENGTH_SHORT).show()
-                })
+    EZPermission.requestPermission(context, OnReqPermissionKTResult()
+            .onGranted {
 
-### 3、注意事项 ###
+            }.onDenied {
 
-PRequester的初始化使用链式调用方式如下：
+            },
+            Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE)
 
-	new PRequester(Manifest.permission.CALL_PHONE)
-                .setTips("提示")
-                .setMessage("该应用需要获取你的电话权限，请到设置页面开启")
-                .setNegativeButtonText("取消")
-                .setPositiveButtonText("带我去")
+### 忽略处理 ###
 
-如果不想跳转到设置页面，那么`setPositiveButtonText(null)`即可。消极按钮点击后会关闭对话框并调用`onRequestFailed`回调函数
+如果想在用户选择禁止不在询问以后要求用户去往设置页的话，可以传入
+OnReqPermissionAlIgnoredResult或者OnReqPermissionAlIgnoredKTResult进行处理
+
+**in java**
+
+    EZPermissionKt.getEZPermission().requestPermission(context, new OnReqPermissionAlIgnoredResult(activity) {
+        @Override
+        protected void onGranted(ArrayList<String> permissions) {
+     
+		}
+
+        @Override
+        protected void onDenied(ArrayList<String> permissions) {
+     
+		}
+    }, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CALL_PHONE);
+
+
+**in kotlin**
+
+	EZPermission.requestPermission(context,OnReqPermissionAtIgnoredKTResult(activity)
+        .onGranted {
+        
+		}.onDenied {
+        
+        }, Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CALL_PHONE)
+
+**OnReqPermissionAlIgnoredResult  、 OnReqPermissionAlIgnoredKTResult可选择传入更多参数，用于配置引导用户跳往设置页面的弹窗文案，具体可查看源码**

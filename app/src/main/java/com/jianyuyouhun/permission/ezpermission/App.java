@@ -2,7 +2,6 @@ package com.jianyuyouhun.permission.ezpermission;
 
 import android.app.Application;
 
-import com.jianyuyouhun.permission.library.EZPermission;
 
 /**
  *
@@ -10,9 +9,15 @@ import com.jianyuyouhun.permission.library.EZPermission;
  */
 
 public class App extends Application {
+    private static App instance;
+
+    public static App getInstance() {
+        return instance;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
-        EZPermission.Companion.init(this);
+        instance = this;
     }
 }
