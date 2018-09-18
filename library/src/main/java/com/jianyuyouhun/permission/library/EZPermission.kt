@@ -1,6 +1,7 @@
 package com.jianyuyouhun.permission.library
 
 import android.app.Activity
+import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -13,7 +14,7 @@ import java.lang.ref.WeakReference
  * Created by wangyu on 2018/9/14.
  */
 private const val cacheName = "app_permissions_cache"
-var EZPermission = object : EPAction() {
+var ezpermission = object : EPAction() {
     private var ignoredManager: IgnoredManager? = null
     private var reqListenerWeak: WeakReference<OnRequestPermissionResult>? = null
     private var permissions = ArrayList<String>()
@@ -132,4 +133,11 @@ abstract class EPAction {
     abstract fun onRequestPermissionsResult(activity: Activity, requestCode: Int, grantResults: IntArray)
     abstract fun startSettings(context: Context, callback: () -> Unit)
     abstract fun onSettingFinish()
+}
+@Deprecated("已弃用，使用ezpermission（kt）或者EZPermissionKt.getEzpermission()（java）")
+class EZPermission {
+    companion object {
+        @Deprecated("2.0版本不需要初始化")
+        fun init(app: Application) {}
+    }
 }

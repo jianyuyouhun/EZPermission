@@ -77,7 +77,7 @@ public abstract class OnReqPermissionAlIgnoredResult extends OnReqPermissionResu
     }
 
     private void startSetting() {
-        EZPermissionKt.getEZPermission().startSettings(activity, new Function0<Unit>() {
+        EZPermissionKt.getEzpermission().startSettings(activity, new Function0<Unit>() {
             @Override
             public Unit invoke() {
                 List<String> permissions = new ArrayList<>();

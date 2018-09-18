@@ -1,8 +1,7 @@
 package com.jianyuyouhun.permission.library.listener
 
-import com.jianyuyouhun.permission.library.EZPermission
 import com.jianyuyouhun.permission.library.ReqCode
-import com.jianyuyouhun.permission.library.listener.OnRequestPermissionResult
+import com.jianyuyouhun.permission.library.ezpermission
 
 /**
  * 请求结果处理回调kt
@@ -10,7 +9,7 @@ import com.jianyuyouhun.permission.library.listener.OnRequestPermissionResult
  */
 abstract class PreHandleResult : OnRequestPermissionResult {
 
-    protected val ignoredManager by lazy { EZPermission.getIgnoredManager() }
+    protected val ignoredManager by lazy { ezpermission.getIgnoredManager() }
     protected var granteds = ArrayList<String>()
     protected var denieds = ArrayList<String>()
 

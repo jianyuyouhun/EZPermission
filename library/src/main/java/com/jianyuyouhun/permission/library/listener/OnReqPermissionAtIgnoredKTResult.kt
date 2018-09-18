@@ -4,7 +4,7 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AlertDialog
-import com.jianyuyouhun.permission.library.EZPermission
+import com.jianyuyouhun.permission.library.ezpermission
 
 /**
  * 考虑不在询问的权限请求,需要当前activity对象
@@ -48,7 +48,7 @@ class OnReqPermissionAtIgnoredKTResult(private val activity: Activity,
     }
 
     private fun startSetting() {
-        EZPermission.startSettings(activity, {
+        ezpermission.startSettings(activity, {
             val permissions = ArrayList<String>()
             permissions.clear()
             permissions.addAll(granteds)
