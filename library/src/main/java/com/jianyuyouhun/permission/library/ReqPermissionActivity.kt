@@ -10,7 +10,7 @@ import android.support.v7.app.AppCompatActivity
  */
 class ReqPermissionActivity: AppCompatActivity() {
 
-    private val permissions by lazy { EZPermission.getPermissions() }
+    private val permissions by lazy { ezpermission.getPermissions() }
 
     private val reqCode = 1
 
@@ -22,7 +22,7 @@ class ReqPermissionActivity: AppCompatActivity() {
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == reqCode) {
-            EZPermission.onRequestPermissionsResult(this, requestCode, grantResults)
+            ezpermission.onRequestPermissionsResult(this, requestCode, grantResults)
         }
     }
 }
