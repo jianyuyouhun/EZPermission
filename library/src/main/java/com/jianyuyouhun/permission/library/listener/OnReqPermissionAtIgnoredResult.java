@@ -20,18 +20,18 @@ import kotlin.jvm.functions.Function0;
  * Created by wangyu on 2018/9/17.
  */
 
-public abstract class OnReqPermissionAlIgnoredResult extends OnReqPermissionResult {
+public abstract class OnReqPermissionAtIgnoredResult extends OnReqPermissionResult {
 
     private Activity activity;
     private String title, message, ok, cancel;
 
     private List<String> ignoreds = new ArrayList<>();
 
-    public OnReqPermissionAlIgnoredResult(Activity activity) {
+    public OnReqPermissionAtIgnoredResult(Activity activity) {
         this(activity, "提示", "该应用需要您赋予相应的权限", "去设置页面开启", "取消");
     }
 
-    public OnReqPermissionAlIgnoredResult(Activity activity, String title, String message, String ok, String cancel) {
+    public OnReqPermissionAtIgnoredResult(Activity activity, String title, String message, String ok, String cancel) {
         this.activity = activity;
         this.title = title;
         this.message = message;
