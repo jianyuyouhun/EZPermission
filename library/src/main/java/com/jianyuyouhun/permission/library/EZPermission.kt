@@ -1,7 +1,6 @@
 package com.jianyuyouhun.permission.library
 
 import android.app.Activity
-import android.app.Application
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -16,8 +15,9 @@ import java.lang.ref.WeakReference
 private const val cacheName = "app_permissions_cache"
 var ezpermission = object : EPAction() {
     private var ignoredManager: IgnoredManager? = null
-    private var reqListenerWeak: WeakReference<OnRequestPermissionResult>? = null
+    private var reqListener:OnRequestPermissionResult?=null
     private var permissions = ArrayList<String>()
+    private var isReqIng = false
 
     /**
      * 获取申请列表
@@ -29,28 +29,25 @@ var ezpermission = object : EPAction() {
      */
     override fun getIgnoredManager(): IgnoredManager = ignoredManager!!
 
-    /**
-     * 获取回调，调用此方法时表示明确不为空对象
-     */
-    fun getListener(): OnRequestPermissionResult = reqListenerWeak!!.get()!!
-
     override fun requestPermission(context: Context, listener: OnRequestPermissionResult, vararg permissions: String) {
         if (permissions.isEmpty()) {
             throw IllegalArgumentException("permissions为空，请传入需要申请的权限")
         }
-        reqListenerWeak?.get()?.apply {
-            //回调不为空表示已经在请求了，此时抛出异常
+        if (isReqIng) {
             throw RuntimeException("正在申请权限，请勿多次调用")
-        } ?: saveParams(permissions, listener, {
-            //为空时则保存回调，继续向下执行
-            ignoredManager?.apply {
-                //缓存管理器已初始化，开始申请
-                doRequest(context)
-            } ?: initAndLoop(context, {
-                //初始化缓存管理器，然后开始申请
-                doRequest(context)
+        } else {
+            isReqIng = true
+            saveParams(permissions, listener, {
+                //为空时则保存回调，继续向下执行
+                ignoredManager?.apply {
+                    //缓存管理器已初始化，开始申请
+                    doRequest(context)
+                } ?: initAndLoop(context, {
+                    //初始化缓存管理器，然后开始申请
+                    doRequest(context)
+                })
             })
-        })
+        }
     }
 
     private fun doRequest(context: Context) {
@@ -75,13 +72,13 @@ var ezpermission = object : EPAction() {
     }
 
     private fun onResult(reqCode: ReqCode, permission: String, shouldShowRationale: Boolean) {
-        getListener().onResult(reqCode, permission, shouldShowRationale)
+        reqListener?.onResult(reqCode, permission, shouldShowRationale)
     }
 
     private fun isOver() {
-        getListener().isOver()
+        reqListener?.isOver()
         permissions.clear()
-        reqListenerWeak?.clear()
+        isReqIng = false
     }
 
     /**
@@ -90,7 +87,7 @@ var ezpermission = object : EPAction() {
     private fun saveParams(pers: Array<out String>, listener: OnRequestPermissionResult, goOn: () -> Unit) {
         permissions.clear()
         permissions.addAll(pers)
-        reqListenerWeak = WeakReference(listener)
+        reqListener = listener
         goOn()
     }
 
@@ -133,11 +130,4 @@ abstract class EPAction {
     abstract fun onRequestPermissionsResult(activity: Activity, requestCode: Int, grantResults: IntArray)
     abstract fun startSettings(context: Context, callback: () -> Unit)
     abstract fun onSettingFinish()
-}
-@Deprecated("已弃用，使用ezpermission（kt）或者EZPermissionKt.getEzpermission()（java）")
-class EZPermission {
-    companion object {
-        @Deprecated("2.0版本不需要初始化")
-        fun init(app: Application) {}
-    }
 }
