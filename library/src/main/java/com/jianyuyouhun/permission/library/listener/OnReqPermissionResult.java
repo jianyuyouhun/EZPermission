@@ -1,5 +1,8 @@
 package com.jianyuyouhun.permission.library.listener;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import java.util.ArrayList;
 
 /**
@@ -8,16 +11,27 @@ import java.util.ArrayList;
  */
 
 public abstract class OnReqPermissionResult extends PreHandleResult {
+    private Handler handler = new Handler(Looper.getMainLooper());
 
     @Override
     public void onPreHandleFinished() {
-        ArrayList<String> granteds = getGranteds();
-        ArrayList<String> denieds = getDenieds();
+        final ArrayList<String> granteds = getGranteds();
+        final ArrayList<String> denieds = getDenieds();
         if (granteds.size() != 0) {
-            onGranted(granteds);
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    onGranted(granteds);
+                }
+            });
         }
         if (denieds.size() != 0) {
-            onDenied(denieds);
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    onDenied(denieds);
+                }
+            });
         }
     }
 

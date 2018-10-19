@@ -22,7 +22,7 @@ class MainActivity2 : AppCompatActivity() {
     }
 
     private fun testV2() {
-        ezpermission.requestPermission(this,
+        ezpermission.requestPermission(baseContext,
                 OnReqPermissionAtIgnoredKTResult(this)
                         .onGranted {
                             var p = ""
