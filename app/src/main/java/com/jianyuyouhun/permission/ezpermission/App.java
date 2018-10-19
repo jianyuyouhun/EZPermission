@@ -1,8 +1,10 @@
 package com.jianyuyouhun.permission.ezpermission;
 
-import android.app.Application;
+import com.swuos.mobile.jmvclibrary.app.BaseModel;
+import com.swuos.mobile.jmvclibrary.app.JApp;
+import com.swuos.mobile.jmvclibrary.models.HttpModel;
 
-import com.jianyuyouhun.permission.library.EZPermission;
+import java.util.List;
 
 
 /**
@@ -10,17 +12,19 @@ import com.jianyuyouhun.permission.library.EZPermission;
  * Created by wangyu on 2017/10/19.
  */
 
-public class App extends Application {
-    private static App instance;
-
-    public static App getInstance() {
-        return instance;
+public class App extends JApp {
+    @Override
+    protected boolean setDebugMode() {
+        return BuildConfig.DEBUG;
     }
 
     @Override
-    public void onCreate() {
-        super.onCreate();
-        instance = this;
-        EZPermission.Companion.init(this);
+    protected void registerApi(HttpModel httpModel) {
+
+    }
+
+    @Override
+    protected void initModels(List<BaseModel> modelList) {
+
     }
 }

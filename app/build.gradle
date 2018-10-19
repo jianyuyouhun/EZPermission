@@ -6,7 +6,7 @@ android {
     buildToolsVersion "26.0.2"
     defaultConfig {
         applicationId "com.jianyuyouhun.permission.ezpermission"
-        minSdkVersion 14
+        minSdkVersion 15
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -17,6 +17,10 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -24,7 +28,8 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.1.0'
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     compile project (':library')
-//    compile 'com.github.jianyuyouhun:ezpermission:2.0.1'
+    compile 'com.github.swuos:swu-mvc:1.0'
+//    compile 'com.github.jianyuyouhun:ezpermission:2.0.1-release'
 }
 
 repositories {
