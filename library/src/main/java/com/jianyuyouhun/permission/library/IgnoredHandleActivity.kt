@@ -1,6 +1,7 @@
 package com.jianyuyouhun.permission.library
 
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 
@@ -13,6 +14,7 @@ class IgnoredHandleActivity : AppCompatActivity() {
     private val reqCode = 1
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT//设置竖屏模式
         startSystemSettingActivity(this, reqCode)
     }
 

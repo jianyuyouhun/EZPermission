@@ -1,5 +1,6 @@
 package com.jianyuyouhun.permission.library
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.support.v4.app.ActivityCompat
 import android.support.v7.app.AppCompatActivity
@@ -16,6 +17,7 @@ class ReqPermissionActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT//设置竖屏模式
         ActivityCompat.requestPermissions(this, permissions.toTypedArray(), reqCode)
     }
 

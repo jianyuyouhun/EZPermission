@@ -8,11 +8,10 @@
         android:supportsRtl="true">
         <activity
             android:name=".ReqPermissionActivity"
-            android:screenOrientation="portrait"
             android:theme="@style/Translucent.Activity" />
-        <activity android:name=".IgnoredHandleActivity"
-            android:screenOrientation="portrait"
-            android:theme="@style/Translucent.Activity"/>
+        <activity
+            android:name=".IgnoredHandleActivity"
+            android:theme="@style/Translucent.Activity" />
     </application>
 
 </manifest>
